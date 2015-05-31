@@ -60,7 +60,7 @@ knit_hooks$set(output = function(x, options)
 
 # An Introduction to Parallelism
 
-People talk a lot about *parallelism* these days.  The basic idea is really simple.  Parallelism is all about independence, literally the ability to do multiple things at the same time in a deterministic way.  Mostly, parallelism isn't the hard part.  Really the only reason anyone thinks this stuff is hard is because software engineering is an inherently disfunctional discipline practiced exclusively by sociopathic masochists.
+People talk a lot about *parallelism* these days.  The basic idea is really simple.  Parallelism is all about independence, literally the ability to do multiple things at the same time in a deterministic way.  Mostly, parallelism isn't the hard part.  Really the only reason anyone thinks this stuff is hard is because software engineering is an inherently dysfunctional discipline practiced exclusively by sociopathic masochists.
 
 Programmers like to act like parallelism is this super complicated thing that the hoi polloi are too impossibly dumb to ever grasp.  In actual fact, parallelism is really easy most of the time, especially for scientific workflows.  Making good use of 15 cores might be a challenge for an Android app that interprets the stomach rumbling sounds of those near you as "hunger" or "you know damn well that guy just ate" (dear venture capitalists, call me 😉).  But scientific workflows tend to be very (eheheheh) regular, and predictable.
 
@@ -101,7 +101,7 @@ Some people might split this into additional concepts of *task parallelism* and 
 	<div class="caption">"I know you asked for a mound of dirt, but management read an article on hackernews about how wood chips are more scalable."</div>
 </div>
 
-Forget computers for a second because they're miserable creations designed to make us question the value of human life.  Say you have 100 workers with shovels in a field.  You want to dig 100 holes?  Perfect, just throw one worker at each hole and you improve your time-to-hole performance 100-fold!  But what if you want to dig one really big hole?  Throwing 100 people at it and telling them to dig probably won't work out for you.  There's lots of inter-digger communication that has to take place to make sure that they're digging in the right place, that dirt is leaving the hole correctly, all kinds of things.  And nevermind that what you really needed in the first place was a mound of dirt.
+Forget computers for a second because they're miserable creations designed to make us question the value of human life.  Say you have 100 workers with shovels in a field.  You want to dig 100 holes?  Perfect, just throw one worker at each hole and you improve your time-to-hole performance 100-fold!  But what if you want to dig one really big hole?  Throwing 100 people at it and telling them to dig probably won't work out for you.  There's lots of inter-digger communication that has to take place to make sure that they're digging in the right place, that dirt is leaving the hole correctly, all kinds of things.  And never mind that what you really needed in the first place was a mound of dirt.
 
 For clarity, you would prefer to be in the 100 hole situation.  It's just easier to manage.  And like any good manager, when it's all done, you get to take credit for all the hard work.  And you can even fire all the workers when you're done if you want to (this is called "the cloud").  Of course real life is usually more complicated than this.  It tends to be more like, you need 20 holes you need dug, and each of vastly differing sizes, and all you have is an ice cream scoop and a drill.
 
@@ -112,7 +112,7 @@ For clarity, you would prefer to be in the 100 hole situation.  It's just easier
 	<div class="caption">Your first homework exercise is to write a script to bury this hole-digging analogy.</div>
 </div>
 
-Parallelism in R is very simple.  This is often a huge shock to people who come to R from other languages, since everything else in R is so goddamn convoluted and stupid.  But it's true!  The language mandates certain guarantees about the behavior of functions, for example, that make paralellism in many cases completely trivial.  And it even supports some very nice utilities for very easily writing parallel code.  Unfortunately, like everything else in R, there are several official interfaces, and about a hundred unofficial ones.
+Parallelism in R is very simple.  This is often a huge shock to people who come to R from other languages, since everything else in R is so goddamn convoluted and stupid.  But it's true!  The language mandates certain guarantees about the behavior of functions, for example, that make parallelism in many cases completely trivial.  And it even supports some very nice utilities for very easily writing parallel code.  Unfortunately, like everything else in R, there are several official interfaces, and about a hundred unofficial ones.
 
 In R, a good first place to start thinking about parallelism is the `parallel` package.  It contains two separate interfaces, one like the one from the `multicore` package and one like the `snow` package's interface.  Presumably in an effort to keep things "interesting", the `parallel` package completely subsumes the `multicore` package, but *not* the `snow` package.  It also makes no attempt to unify the two interfaces.  But you're not using R because it's easy; you're using it because you have to, so shhh, no tears.  
 
@@ -124,7 +124,7 @@ system.time(lapply(index, sqrt))
 system.time(parallel::mclapply(index, sqrt, mc.cores=2))
 ```
 
-Obiviously using more cores means more performance, and I am so confident in this self-evident fact, that I won't even bother to check the results of the benchmark before completing this sentence.
+Obviously using more cores means more performance, and I am so confident in this self-evident fact, that I won't even bother to check the results of the benchmark before completing this sentence.
 
 So that's R, but what about OpenMP?  OpenMP is a parallel programming standard for the only compiled languages that matter, C, C++, and Fortran.  Basically it's a way of asking the compiler to parallelize something for you.  But much like that time you were playing dungeons and dragons and got a scroll of wish, you have to be extraordinarily careful how you phrase your request.  Failure to form your request carefully will likely result in chaos and destruction.
 
@@ -453,7 +453,7 @@ You can use it in a few ways, with some sometimes subtle differences.  The main 
 * `#pragma omp for simd`
 * `#pragma omp simd`
 
-The first says that the loop should be in parallel and use vector instructions.  The second says to run the for loop in serial (in the sense of the number of cores to use) but to use vectorization.  This is a really powerful construct for matrices, where maybe you operpate over the rows and columns of a matrix:
+The first says that the loop should be in parallel and use vector instructions.  The second says to run the for loop in serial (in the sense of the number of cores to use) but to use vectorization.  This is a really powerful construct for matrices, where maybe you operate over the rows and columns of a matrix:
 
 ```Rcpp
 #pragma omp parallel for
@@ -494,7 +494,7 @@ Now if you use a pragma that isn't known to your compiler, the compiler will com
 
 This way, I can insert `SAFE_SIMD` or `SAFE_FOR_SIMD` into my code, and if it's there, use it, if not, don't.
 
-For Fortran users, you can't do this sort of thing without using an "FPP", which is generally a cascade of headaches and heartbreaks.  Basically beacuse there's really no such thing as an "FPP", and people tend to just use the CPP and hope for the best.  I like Fortran, but we need to be honest with ourselves; if this level of control is important to you, then you should be using C.
+For Fortran users, you can't do this sort of thing without using an "FPP", which is generally a cascade of headaches and heartbreaks.  Basically because there's really no such thing as an "FPP", and people tend to just use the CPP and hope for the best.  I like Fortran, but we need to be honest with ourselves; if this level of control is important to you, then you should be using C.
 
 
 
