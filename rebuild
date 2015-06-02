@@ -11,4 +11,5 @@ mv /tmp/index.html .
 mv /tmp/custom.css .
 git add index.html custom.css
 git commit -m "updated from master"
+git push origin gh-pages
 git checkout master
