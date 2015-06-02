@@ -1,0 +1,4 @@
+#!/bin/sh
+
+Rscript -e "rmarkdown::render('openmp.Rmd')"
+mv openmp.html index.html
