@@ -48,7 +48,7 @@ knit_hooks$set(output = function(x, options)
 
 # About This Document
 
-## tl;dr:
+## tl;dr
 
 * **Version:** 2.0
 * **Text License:** [CC BY-SA](http://creativecommons.org/licenses/by/4.0/).
