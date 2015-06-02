@@ -457,7 +457,45 @@ Execution halted
 Segmentation fault</code></pre>
 <p>…ehh, it’s probably fine.</p>
 <p>So what went wrong? Just like you would in plain R, we’re creating copies of data behind the scenes in that column extraction, implicitly using parts of R that are not thread safe. Once again, this is not a defect in Rcpp; it is just something inherent to R.</p>
-<p>One possible correction is to just write out the inner loop explicitly. It won’t hurt. Another possibility is to do things more the C/C++ way than the R way (pointers or STL stuff). It may also be possible to collapse the <code>rcpp_rootsum_j()</code> function into a single line (at the <code>ret[j]</code> part). The C++ compiler may be crafty enough to see that the copy of the column is unnecessary. But I don’t really know, and I wouldn’t trust it regardless. Finally, you could just set <code>OMP_NUM_THREADS=1</code> before running (or remove the <code>pragma omp parallel for</code> line), and then the program would run correctly every time, but strictly in serial!</p>
+<p>We can perhaps make this more clear by getting rid of the Rcpp shell and use just R’s basic C interface. Doing so, you might get something like:</p>
+<pre class="sourceCode C"><code class="sourceCode c"><span class="ot">#include &lt;R.h&gt;</span>
+<span class="ot">#include &lt;Rinternals.h&gt;</span>
+
+
+<span class="dt">double</span> rootsum_j(SEXP x)
+{
+  <span class="dt">double</span> ret = <span class="dv">0</span>.;
+  
+  <span class="kw">for</span> (<span class="dt">int</span> i=<span class="dv">0</span>; i&lt;LENGTH(x); i++)
+    ret += sqrt(REAL(x)[i]);
+  
+  <span class="kw">return</span> ret;
+}
+
+SEXP rootsum(SEXP x)
+{
+  <span class="dt">const</span> <span class="dt">int</span> nr = nrows(x);
+  <span class="dt">const</span> <span class="dt">int</span> nc = ncols(x);
+  SEXP ret;
+  PROTECT(ret = allocVector(REALSXP, nc));
+  SEXP col;
+  
+  <span class="ot">#pragma omp parallel for</span>
+  <span class="kw">for</span> (<span class="dt">int</span> j=<span class="dv">0</span>; j&lt;nc; j++)
+  {
+    PROTECT(col = allocVector(REALSXP, nr));
+    <span class="kw">for</span> (<span class="dt">int</span> i=<span class="dv">0</span>; i&lt;nr; i++)
+      REAL(col)[i] = REAL(x)[i + nr*j];
+    
+    REAL(ret)[j] = rootsum_j(col);
+    UNPROTECT(<span class="dv">1</span>);
+  }
+  
+  UNPROTECT(<span class="dv">1</span>);
+  <span class="kw">return</span> ret;
+}</code></pre>
+<p>This is not a direct “instruction-to-instruction” translation (as much as that statement can even make sense), but it has similar problems, and those problems demonstrate themselves similarly. Anyone who “knows what they’re doing” (TM) will instantly see the warning signs here. We’re not only allocating data inside of a parallel region, but we’re making an unnecessary copy to boot. However, I have both personally and professionally seen numerous people make these kinds of mistakes as they transition from programming in higher languages like R to lower languages like C and C++. This is an important discussion, but as the topic here is about OpenMP and not working with a compile language for its own sake, a lot of what I might say about this is beyond the scope of this document.</p>
+<p>One possible correction is to just write out the inner loop explicitly. It won’t bite, don’t worry. Another possibility is to do things more the C/C++ way than the R way (pointers or STL stuff). It may also be possible to collapse the <code>rcpp_rootsum_j()</code> function into a single line (at the <code>ret[j]</code> part). The C++ compiler may be crafty enough to see that the copy of the column is unnecessary. But I don’t really know, and I wouldn’t trust it regardless. Finally, you could just set <code>OMP_NUM_THREADS=1</code> before running (or remove the <code>pragma omp parallel for</code> line), and then the program would run correctly every time, but strictly in serial!</p>
 <p>Finally, the relatively recent addition of Rcpp Attributes to Rcpp should make it much easier to avoid things like this much of the time, since it makes it easier to write idiomatic C++.</p>
 </div>
 <div id="environment-variables-in-r" class="section level2">
