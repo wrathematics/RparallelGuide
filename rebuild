@@ -3,3 +3,12 @@
 Rscript -e "rmarkdown::render('openmp.Rmd')"
 mv openmp.html index.html
 
+### TODO make this less dumb
+mv index.html /tmp
+mv custom.css /tmp
+git checkout gh-pages
+mv /tmp/index.html .
+mv /tmp/custom.css .
+git add index.html custom.css
+git commit -m "updated from master"
+git checkout master
