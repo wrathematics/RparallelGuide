@@ -585,13 +585,13 @@ Finally, the relatively recent addition of Rcpp Attributes to Rcpp should make i
 
 ## Environment Variables in R
 
-R has a really useful way of setting/getting environment variables.  We've already seen an example of this for setting the compiler flags.  Unfortunately, they don't work with `OMP_NUM_THREADS`, which is a way to control the number of threads spawned by your parallel OpenMP loops.  You could set this before starting your R session if you work in terminals.  Otherwise, you will have to rig up something calling `omp_set_num_threads()` from C/C++, or accept the default (max threads on your machine).
+R has a really useful way of setting/getting environment variables.  We've already seen an example of this for setting the compiler flags.  Unfortunately, they don't work with `OMP_NUM_THREADS`, which is a way to control the number of threads spawned by your parallel OpenMP loops.  You could set this before starting your R session if you work in terminals.  Otherwise, you will have to rig up something calling `omp_set_num_threads()` from C/C++, or accept the default (max threads on your machine).  You can see something like this in the [Rth](https://github.com/Rth-org/Rth/blob/master/src/threads.cpp) package.
 
 
 
 ## Compilers
 
-If you're doing development work on a Mac, you are probably using Clang.  I love Clang, but it just got OpenMP support like a fucking week ago.  Until Apple ships the new stuff with Xcode, you will need to install gcc to make use of OpenMP.  
+If you're doing development work on a Mac, you are probably using Clang.  I love Clang, but it just got OpenMP support like a fucking week ago.  Until Apple ships the new stuff with Xcode, you will need to install gcc to make use of OpenMP or find some way to manually install the new Clang stuff.  I think you can install gcc through the various software repo things like macports though.  
 
 
 
@@ -627,7 +627,7 @@ for (int j=0; j<n; j++)
 
 This will loop over the columns of the matrix in parallel, and within each thread, use vector registers to loop over the rows and do `something()`.  The addition of vectorization can improve the performance of your bottlenecks by a factor of 2 to 4.  There are plenty of other interesting ways to use `simd`, such as `declare simd` for inline functions, but this should definitely get you started.  
 
-Now if you use a pragma that isn't known to your compiler, the compiler will complain.  Recent-ish versions of gcc support the `simd` pragma, and Clang's OpenMP release supports it as well.  But if you live on an ancient software stack or are a huge asshole, you can still program for people living in the modern era pretty simply.  In C/C++, you could use the preprocessor to easily check if the `simd` pragma is supported by checking the OpenMP version:
+Now if you use a pragma that isn't known to your compiler, the compiler will complain.  Recent-ish versions of gcc (>= 4.9) support the `simd` pragma, and Clang's OpenMP release supports it as well.  But if you live on an ancient software stack or are a huge asshole, you can still program for people living in the modern era pretty simply.  In C/C++, you could use the preprocessor to easily check if the `simd` pragma is supported by checking the OpenMP version:
 
 ```C
 #ifndef MY_OMP_H_
