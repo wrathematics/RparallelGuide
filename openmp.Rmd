@@ -11,27 +11,6 @@ output:
     highlight: kate
 ---
 
-<br><br>
-**WARNING:** This document was not written while sober.  Apparently I think I'm hilarious when I'm drunk, so don't take the tone of this document too seriously.  This is not an academic document, and it makes extensive use of adult language.
-
-
-
-# License and Copying
-
-<br><br>
-This work is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).
-[![Creative Commons License](pics/ccbysa.png)](http://creativecommons.org/licenses/by/4.0/ "Creative Commons License")
-
-All source code, appearing in boxes like this:
-
-```r
-source_code()
-```
-
-is released into the public domain.  Or if you live in some kind of fake country that doesn't recognize the public domain, you may treat it as MIT licensed.  I really don't give a fuck is what I'm trying to say.
-
-This article contains the use of adult language.  I assume that only an adult would be interested in this topic, but if you're a giant weepy baby, feel free to read someone else's inferior explanation of how this stuff works.
-
 
 ```{r, echo=FALSE, include=FALSE}
 library(magrittr)
@@ -60,6 +39,37 @@ knit_hooks$set(output = function(x, options)
   hook_output(x, options)
 })
 ```
+
+
+<br><br>
+**WARNING:** This document was not written while sober.  Apparently I think I'm hilarious when I'm drunk, so don't take the tone of this document too seriously.  This is not an academic document, and it makes extensive use of adult language.
+
+
+
+# About This Document
+
+## tl;dr:
+
+* **Version:** 2.0
+* **Text License:** [CC BY-SA](http://creativecommons.org/licenses/by/4.0/).
+* **Code License:** public domain
+* **Naughty Language:** yes
+
+## Long Version
+
+This document is licensed under a [creative commons license](http://creativecommons.org/licenses/by/4.0/).
+[![Creative Commons License](pics/ccbysa.png)](http://creativecommons.org/licenses/by/4.0/ "Creative Commons License")
+
+In addition, all source code presented in this document, appearing in boxes like this:
+
+```r
+source_code()
+```
+
+is released into the public domain.  Or if you live in some kind of fake country that doesn't recognize the public domain, you may treat it as MIT licensed.  I really don't give a fuck is what I'm trying to say.
+
+This article contains the use of adult language.  I assume that only an adult would be interested in this topic, but if you're a giant weepy baby, feel free to read someone else's inferior explanation of how this stuff works.
+
 
 
 # An Introduction to Parallelism
