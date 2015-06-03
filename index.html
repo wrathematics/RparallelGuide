@@ -10,7 +10,7 @@
 
 <meta name="author" content="wrathematics" />
 
-<meta name="date" content="2015-06-02" />
+<meta name="date" content="2015-06-03" />
 
 <title>Parallelism, R, and OpenMP</title>
 
@@ -75,7 +75,7 @@ img {
 <div id="header">
 <h1 class="title">Parallelism, R, and OpenMP</h1>
 <h4 class="author"><em><a href="http://wrathematics.info/">wrathematics</a></em></h4>
-<h4 class="date"><em>June 02, 2015</em></h4>
+<h4 class="date"><em>June 03, 2015</em></h4>
 </div>
 
 <div id="TOC">
@@ -535,16 +535,16 @@ SEXP rootsum(SEXP x)
 <li><code>#pragma omp for simd</code></li>
 <li><code>#pragma omp simd</code></li>
 </ul>
-<p>The first says that the loop should be in parallel and use vector instructions. The second says to run the for loop in serial (in the sense of the number of cores to use) but to use vectorization. This is a really powerful construct for matrices, where maybe you operate over the rows and columns of a matrix:</p>
+<p>The first says that the loop should be in parallel and use vector instructions. The second says to run the for loop in serial (in the sense of the number of cores to use) but to use vectorization. The third is useful to declare a loop inside of a <code>parallel for</code> region to use vector instructions. This is a really powerful construct for matrices, where maybe you operate over the rows and columns of a matrix:</p>
 <pre class="Rcpp"><code>#pragma omp parallel for
 for (int j=0; j&lt;n; j++)
 {
-  #pragma omp for simd
+  #pragma omp simd
   for (int i=0; i&lt;m; i++)
     x(i, j) = something(i, j);
 }</code></pre>
-<p>This will loop over the columns of the matrix in parallel, and within each thread, use vector registers to loop over the rows and do <code>something()</code>. The addition of vectorization can improve the performance of your bottlenecks by a factor of 2 to 4. There are plenty of other interesting ways to use <code>simd</code>, such as <code>declare simd</code> for inline functions, but this should definitely get you started.</p>
-<p>Now if you use a pragma that isn’t known to your compiler, the compiler will complain. Recent-ish versions of gcc (&gt;= 4.9) support the <code>simd</code> pragma, and Clang’s OpenMP release supports it as well. But if you live on an ancient software stack or are a huge asshole, you can still program for people living in the modern era pretty simply. In C/C++, you could use the preprocessor to easily check if the <code>simd</code> pragma is supported by checking the OpenMP version:</p>
+<p>This will loop over the columns of the matrix in parallel, and within each thread, use vector registers to loop over the rows and do <code>something()</code>. The addition of vectorization can improve the performance of your bottlenecks by a factor of 2 to 4, depending on your hardware. This is <em>in addition</em> to the performance improvements you would get from parallelism. There are plenty of other interesting ways to use <code>simd</code>, such as <code>declare simd</code> for inline functions, but this should definitely get you started.</p>
+<p>Now if you tell your compiler to use OpenMP and use a pragma that isn’t known to your compiler, you’ll get an error. Recent-ish versions of gcc (&gt;= 4.9) support the <code>simd</code> pragma, and Clang’s initial OpenMP release supports it as well. But if you are a huge asshole with an ancient software stack, you can still program for people living in the modern era pretty simply. In C/C++, you could use the preprocessor to easily check if the <code>simd</code> pragma is supported by checking the OpenMP version:</p>
 <pre class="sourceCode C"><code class="sourceCode c"><span class="ot">#ifndef MY_OMP_H_</span>
 <span class="ot">#define MY_OMP_H_</span>
 
@@ -565,12 +565,12 @@ for (int j=0; j&lt;n; j++)
 <span class="ot">#endif</span>
 
 <span class="ot">#endif</span></code></pre>
-<p>This way, I can insert <code>SAFE_SIMD</code> or <code>SAFE_FOR_SIMD</code> into my code, and if it’s there, use it, if not, don’t.</p>
+<p>This way, I can insert <code>SAFE_SIMD</code> or <code>SAFE_FOR_SIMD</code> into my code, and if <code>simd</code> is supported by my OpenMP version, use it, if not, don’t. All error free.</p>
 <p>For Fortran users, you can’t do this sort of thing without using an “FPP”, which is generally a cascade of headaches and heartbreaks. Basically because there’s really no such thing as an “FPP”, and people tend to just use the CPP and hope for the best. I like Fortran, but we need to be honest with ourselves; if this level of control is important to you, then you should be using C.</p>
 </div>
 <div id="openmp-alternatives" class="section level2">
 <h2><span class="header-section-number">5.6</span> OpenMP Alternatives</h2>
-<p>OpenACC is an alternative. Originally, OpenMP and OpenACC had vastly different goals, though more and more they look similar to me. I honestly don’t know much about it because I never use it, but some people swear by it.</p>
+<p>OpenACC is an alternative. Originally, OpenMP and OpenACC had vastly different goals, though more and more they look similar to me. I honestly don’t know much about it because I never use it, but some people swear by it. It’s probably more interesting to you if you work with accelerators a lot (I don’t).</p>
 <p>If you’re interested in programming accelerator cards, like a gpu, there is an extension for OpenMP to dispatch to a gpu. I’ve never used it, but it seems like a bad idea to me, in the sense that I don’t know how you could hope to get good performance out of it. But I’ve never used it, so maybe you can. In that case, I’d probably look at OpenACC, or things like the Thrust template library.</p>
 <p>Additionally, if you’re using C++, there are a <em>lot</em> of other threading frameworks out there. Most of them are shit. There’s probably something in boost which, under a deeply strained legal interpretation of the word “works”, works. There’s also Intel Thread Building Blocks (TBB). TBB has some really cool ideas in it, but it’s not portable (Intel only), and frankly by my assessment, it’s pretty dead. I don’t work for Intel, or have any special insight into how they do things, but I’m 99% sure they’re just giving up on TBB in favor of OpenMP, which is a real and proper standard (supported deeply by Intel, no less). The various parallel Rcpp efforts, like RcppParallel seem to be heading towards utilizing TBB (because they all use Macs, and Clang only recently got its act together on OpenMP). JJ’s a super duper smart guy, but I really think he’s betting on the wrong horse here.</p>
 <p>Oh there’s also pthreads.</p>
