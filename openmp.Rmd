@@ -613,21 +613,21 @@ You can use it in a few ways, with some sometimes subtle differences.  The main 
 * `#pragma omp for simd`
 * `#pragma omp simd`
 
-The first says that the loop should be in parallel and use vector instructions.  The second says to run the for loop in serial (in the sense of the number of cores to use) but to use vectorization.  This is a really powerful construct for matrices, where maybe you operate over the rows and columns of a matrix:
+The first says that the loop should be in parallel and use vector instructions.  The second says to run the for loop in serial (in the sense of the number of cores to use) but to use vectorization.  The third is useful to declare a loop inside of a `parallel for` region to use vector instructions.  This is a really powerful construct for matrices, where maybe you operate over the rows and columns of a matrix:
 
 ```Rcpp
 #pragma omp parallel for
 for (int j=0; j<n; j++)
 {
-  #pragma omp for simd
+  #pragma omp simd
   for (int i=0; i<m; i++)
     x(i, j) = something(i, j);
 }
 ```
 
-This will loop over the columns of the matrix in parallel, and within each thread, use vector registers to loop over the rows and do `something()`.  The addition of vectorization can improve the performance of your bottlenecks by a factor of 2 to 4.  There are plenty of other interesting ways to use `simd`, such as `declare simd` for inline functions, but this should definitely get you started.  
+This will loop over the columns of the matrix in parallel, and within each thread, use vector registers to loop over the rows and do `something()`.  The addition of vectorization can improve the performance of your bottlenecks by a factor of 2 to 4, depending on your hardware.  This is *in addition* to the performance improvements you would get from parallelism.  There are plenty of other interesting ways to use `simd`, such as `declare simd` for inline functions, but this should definitely get you started.  
 
-Now if you use a pragma that isn't known to your compiler, the compiler will complain.  Recent-ish versions of gcc (>= 4.9) support the `simd` pragma, and Clang's OpenMP release supports it as well.  But if you live on an ancient software stack or are a huge asshole, you can still program for people living in the modern era pretty simply.  In C/C++, you could use the preprocessor to easily check if the `simd` pragma is supported by checking the OpenMP version:
+Now if you tell your compiler to use OpenMP and use a pragma that isn't known to your compiler, you'll get an error.  Recent-ish versions of gcc (>= 4.9) support the `simd` pragma, and Clang's initial OpenMP release supports it as well.  But if you are a huge asshole with an ancient software stack, you can still program for people living in the modern era pretty simply.  In C/C++, you could use the preprocessor to easily check if the `simd` pragma is supported by checking the OpenMP version:
 
 ```C
 #ifndef MY_OMP_H_
@@ -652,7 +652,7 @@ Now if you use a pragma that isn't known to your compiler, the compiler will com
 #endif
 ```
 
-This way, I can insert `SAFE_SIMD` or `SAFE_FOR_SIMD` into my code, and if it's there, use it, if not, don't.
+This way, I can insert `SAFE_SIMD` or `SAFE_FOR_SIMD` into my code, and if `simd` is supported by my OpenMP version, use it, if not, don't.  All error free.
 
 For Fortran users, you can't do this sort of thing without using an "FPP", which is generally a cascade of headaches and heartbreaks.  Basically because there's really no such thing as an "FPP", and people tend to just use the CPP and hope for the best.  I like Fortran, but we need to be honest with ourselves; if this level of control is important to you, then you should be using C.
 
@@ -660,7 +660,7 @@ For Fortran users, you can't do this sort of thing without using an "FPP", which
 
 ## OpenMP Alternatives
 
-OpenACC is an alternative.  Originally, OpenMP and OpenACC had vastly different goals, though more and more they look similar to  me.  I honestly don't know much about it because I never use it, but some people swear by it.
+OpenACC is an alternative.  Originally, OpenMP and OpenACC had vastly different goals, though more and more they look similar to  me.  I honestly don't know much about it because I never use it, but some people swear by it.  It's probably more interesting to you if you work with accelerators a lot (I don't).
 
 If you're interested in programming accelerator cards, like a gpu, there is an extension for OpenMP to dispatch to a gpu.  I've never used it, but it seems like a bad idea to me, in the sense that I don't know how you could hope to get good performance out of it.  But I've never used it, so maybe you can.  In that case, I'd probably look at OpenACC, or things like the Thrust template library.
 
